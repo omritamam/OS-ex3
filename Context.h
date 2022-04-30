@@ -9,14 +9,16 @@ using namespace std;
 class Context{
     const MapReduceClient *client;
     InputVec inputVec;
+    IntermediateVec workspace;
     OutputVec outputVec;
 
 public:
-    Context(const MapReduceClient *const client, const vector<InputPair> inputVec, vector<OutputPair> outputVec,
-            vector<OutputPair> vector) {
+    Context(const MapReduceClient *const client, const InputVec &inputVec, OutputVec &outputVec,
+            IntermediateVec &workspace) {
         this->client = client;
         this->inputVec = inputVec;
         this->outputVec = outputVec;
+        this->workspace = workspace;
     }
 
 

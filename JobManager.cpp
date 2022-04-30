@@ -35,7 +35,7 @@ public:
             threadWorkspaces->push_back(*newWorkspace);
             pthread_t thread_id;
             Context *context;
-            context = new Context(newWorkspace, client, inputVec, outputVec);
+            context = new Context(client, inputVec, outputVec, newWorkspace);
             pthread_create(&thread_id, NULL, mapper, context);
         }
     }
