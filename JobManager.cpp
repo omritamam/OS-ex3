@@ -1,18 +1,15 @@
-//
-// Created by omri.tamam on 28/04/2022.
-//
-
 
 #include <armadillo>
 #include <atomic>
 #include "MapReduceClient.h"
+#include "Context.h"
 
 using namespace std;
 
 void *mapper(void *context)
 {
-    auto tuple = (pair< IntermediateVec ,const MapReduceClient*>*) context;
-    auto workspace = tuple->first;
+    Context* context2 = (Context*) context;
+    auto workspace = context2->workspace;
     auto client = tuple->second;
 ///////////
     client->map(key, value, workspace);
@@ -28,7 +25,7 @@ class JobManager{
     atomic<int> counter;
 
 public:
-    JobManager(const MapReduceClient *const client, const vector<InputPair> vector1, vector<OutputPair> vector2,
+    JobManager(const MapReduceClient *const client, const vector<InputPair> inputVec, vector<OutputPair> outputVec,
                int multiThreadLevel){
         init();
         threadWorkspaces = new vector<IntermediateVec>(multiThreadLevel);
@@ -37,10 +34,8 @@ public:
             auto* newWorkspace = new vector<pair<K2*,V2*>>;
             threadWorkspaces->push_back(*newWorkspace);
             pthread_t thread_id;
-            auto tuple = new pair< vector<pair<K2*,V2*>>,const MapReduceClient*>(
-                    *newWorkspace,reinterpret_cast<const MapReduceClient *const>(&client));
-            // send object instead of the tuple with access to atomic counter
-            pthread_create(&thread_id, NULL, mapper, tuple);
+            Context* context = new Context(newWorkspace,client,inputVec,outputVec);
+            pthread_create(&thread_id, NULL, mapper, context);
         }
     }
     void init(){
