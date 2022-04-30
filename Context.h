@@ -5,4 +5,5 @@
 #ifndef EX3_CONTEXT_H
 #define EX3_CONTEXT_H
 
+class Context;
 #endif //EX3_CONTEXT_H
