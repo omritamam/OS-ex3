@@ -10,7 +10,7 @@ void *mapper(void *context)
 {
     Context* context2 = (Context*) context;
     auto workspace = context2->workspace;
-    auto client = tuple->second;
+    auto client = context2->second;
 ///////////
     client->map(key, value, workspace);
 
@@ -31,10 +31,11 @@ public:
         threadWorkspaces = new vector<IntermediateVec>(multiThreadLevel);
 
         for(int i = 0; i < multiThreadLevel; i++){
-            auto* newWorkspace = new vector<pair<K2*,V2*>>;
+            auto* newWorkspace = new IntermediateVec ;
             threadWorkspaces->push_back(*newWorkspace);
             pthread_t thread_id;
-            Context* context = new Context(newWorkspace,client,inputVec,outputVec);
+            Context *context;
+            context = new Context(newWorkspace, client, inputVec, outputVec);
             pthread_create(&thread_id, NULL, mapper, context);
         }
     }
