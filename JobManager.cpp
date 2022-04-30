@@ -10,9 +10,9 @@ void *mapper(void *context)
 {
     Context* context2 = (Context*) context;
     auto workspace = context2->workspace;
-    auto client = context2->second;
+    auto client = context2->client;
 ///////////
-    client->map(key, value, workspace);
+//client->map(key, value, workspace);
 
     sleep(1);
     printf("Printing GeeksQuiz from Thread \n");
@@ -35,7 +35,7 @@ public:
             threadWorkspaces->push_back(*newWorkspace);
             pthread_t thread_id;
             Context *context;
-            context = new Context(client, inputVec, outputVec, newWorkspace);
+            context = new Context(client, inputVec, outputVec, (newWorkspace));
             pthread_create(&thread_id, NULL, mapper, context);
         }
     }

@@ -6,13 +6,13 @@
 
 using namespace std;
 
-class Context{
+class Context{public:
     const MapReduceClient *client;
     InputVec inputVec;
     IntermediateVec workspace;
     OutputVec outputVec;
 
-public:
+
     Context(const MapReduceClient *const client, const InputVec &inputVec, OutputVec &outputVec,
             IntermediateVec &workspace) {
         this->client = client;
