@@ -30,7 +30,15 @@ void waitForJob(JobHandle job){
 }
 
 void getJobState(JobHandle job, JobState* state){
-    //math mainly
+    JobManager* jobManager = (JobManager*) job;
+    JobState newState;
+    newState.stage = jobManager->stage;
+    switch (jobManager->stage) {
+        case stage_t::SHUFFLE_STAGE:
+            jobManager-> shuffleCounter / jobManager->currentStageElementSize;
+        case stage_t::
+    }
+    *state = newState;
 }
 
 void closeJobHandle(JobHandle job){

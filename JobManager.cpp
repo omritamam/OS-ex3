@@ -61,7 +61,11 @@ bool isNotEmpty(vector<IntermediateVec *> *vector) {
 
 
 void shuffle(JobManager *jobManager){
-    int counter = 0;
+    unsigned long size = 0;
+    for (auto workspace : *jobManager->threadWorkspaces) {
+        size+=workspace->size();
+    }
+    jobManager->currentStageElementSize= size;
     while (isNotEmpty(jobManager->threadWorkspaces)){
         auto* keyVec = new IntermediateVec;
         K2* key = findMaxKey(jobManager);
@@ -69,7 +73,7 @@ void shuffle(JobManager *jobManager){
             while (!(workspace->empty()) && !(*key < *workspace->back().first) && !(*workspace->back().first < *key)){
                 keyVec->push_back(workspace->back());
                 workspace->pop_back();
-                counter++;
+                jobManager->shuffleCounter++;
             }
         }
         jobManager->shuffleList->push_back(keyVec);
@@ -86,6 +90,7 @@ void *thread(void *context2)
     //Map
     if(context->id == 0){
         context->jobManager->stage = stage_t::MAP_STAGE;
+        context->jobManager->currentStageElementSize = n;
     }
     int current = 0;
     while (current < n) {
@@ -100,13 +105,13 @@ void *thread(void *context2)
     //Sort
     sort(workspace->begin(), workspace->end(), sortByKey);
     context->jobManager->sortCounter++;
-
     context->jobManager->barrier->barrier();
     //Shuffle
     if(context->id == 0){
         context->jobManager->stage = stage_t::SHUFFLE_STAGE;
         shuffle(context->jobManager);
         context->jobManager->stage = stage_t::REDUCE_STAGE;
+        context->jobManager->currentStageElementSize = context->jobManager->shuffleList->size();
     }
     //inappropriate use of barrier - need to think of something smarter
     context->jobManager->barrier->barrier();

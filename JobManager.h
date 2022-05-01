@@ -16,6 +16,7 @@ public:
     vector<IntermediateVec*>* shuffleList;
     atomic<int> mapCounter;
     atomic<int> sortCounter;
+    int shuffleCounter = 0;
     atomic<int> reduceCounter;
     mutex mutex1;
     stage_t stage;
@@ -41,6 +42,8 @@ public:
     }
 
     void safePushBackOutputVec(K3 *key, V3 *value);
+
+    unsigned long currentStageElementSize;
 };
 
 
