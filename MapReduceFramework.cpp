@@ -1,5 +1,5 @@
 #include "MapReduceFramework.h"
-#include "JobManager.cpp"
+#include "JobManager.h"
 #include <pthread.h>
 
 JobHandle startMapReduceJob(const MapReduceClient& client,
@@ -25,7 +25,7 @@ void waitForJob(JobHandle job){
     }
     jobManager->joined = true;
     //get thread of threads;
-    pthread_join(jobManager->threads[0]), NULL);
+    pthread_join(jobManager->threads->at(0)->thread, NULL);
 
 }
 

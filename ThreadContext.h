@@ -2,35 +2,25 @@
 #define EX3_THREADCONTEXT_H
 
 #include "MapReduceClient.h"
-#include "JobManager.h"
 #include "MapReduceFramework.h"
 #include <atomic>
 
 using namespace std;
 
+class JobManager;
+
 class ThreadContext{
 public:
 
-    ThreadContext(int i, JobManager *pManager);
-
-    ThreadContext(int i, JobManager *pManager);
-
-    ThreadContext(int i, JobManager manager);
-
-    ThreadContext(int i, JobManager manager);
-
-    ThreadContext(int i, JobManager manager);
-
+    JobManager* jobManager;
     int id;
-    JobManager *jobManager;
-    stage_t stage;
     pthread_t thread;
+    IntermediateVec *workspace;
 
-
-
-    ThreadContext(int id, JobManager *jobManager) {
+    ThreadContext(int id, JobManager *pManager, IntermediateVec *workspace){
         this->id = id;
-        this->jobManager = jobManager;
+        this->jobManager = pManager;
+        this->workspace = workspace;
     }
 
 
