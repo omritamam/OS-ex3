@@ -1,7 +1,3 @@
-//
-// Created by shirayarhi on 01/05/2022.
-//
-
 #ifndef EX3_JOBMANAGER_H
 #define EX3_JOBMANAGER_H
 #include <armadillo>
@@ -14,9 +10,8 @@
 
 class JobManager{
 
-
 public:
-    vector<IntermediateVec> *threadWorkspaces;
+    vector<IntermediateVec*> *threadWorkspaces;
     OutputVec outputVec;
     vector<IntermediateVec*>* shuffleList;
     atomic<int> mapCounter;
@@ -30,7 +25,7 @@ public:
     const MapReduceClient *client;
     vector<ThreadContext*> *threads;
 
-    JobManager(const MapReduceClient *const client, const vector<InputPair> inputVec, vector<OutputPair> outputVec,
+    JobManager(const MapReduceClient *client, vector<InputPair> inputVec, vector<OutputPair> outputVec,
             int multiThreadLevel);
 
     void init(int numThreads){
@@ -38,7 +33,7 @@ public:
         atomic_init(&sortCounter, 0);
         atomic_init(&reduceCounter, 0);
 
-        threadWorkspaces = new vector<IntermediateVec>(numThreads);
+        threadWorkspaces = new vector<IntermediateVec*>();
         threads = new vector<ThreadContext*>();
         barrier = new Barrier(numThreads);
         shuffleList = new vector<IntermediateVec*>;

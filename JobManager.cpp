@@ -1,8 +1,6 @@
-
-
 #include "JobManager.h"
-using namespace std;
 
+using namespace std;
 
 JobManager::JobManager(const MapReduceClient *const client, const vector<InputPair> inputVec,
                        vector<OutputPair> outputVec, int multiThreadLevel) {
@@ -14,8 +12,8 @@ JobManager::JobManager(const MapReduceClient *const client, const vector<InputPa
     init(multiThreadLevel);
 
     for(int i = 0; i < multiThreadLevel; i++){
-        auto* newWorkspace = new IntermediateVec;
-        threadWorkspaces->push_back(*newWorkspace);
+        IntermediateVec* newWorkspace = new IntermediateVec;
+        threadWorkspaces->push_back(newWorkspace);
         ThreadContext *context =  new ThreadContext(i, this, newWorkspace);
         if(pthread_create(&context->thread, NULL, thread, context)){
             //err
@@ -37,8 +35,8 @@ void JobManager::safePushBackOutputVec(K3* key, V3* value){
 K2 *findMaxKey(JobManager *jobManager) {
     K2* max = nullptr;
     for (auto workspace : *jobManager->threadWorkspaces) {
-        if (!workspace.empty()){
-            K2* current = workspace.back().first;
+        if (!workspace->empty()){
+            K2* current = workspace->back().first;
             if (max == nullptr || *max < *current ){
                 max = current;
             }
@@ -49,19 +47,28 @@ K2 *findMaxKey(JobManager *jobManager) {
 
 
 bool sortByKey(const IntermediatePair &a, const IntermediatePair &b){
-    return (a.first < b.first);
+    return *(a.first) < *(b.first);
 }
 
+
+bool isNotEmpty(vector<IntermediateVec *> *vector) {
+    for (const auto& workspace : *vector)
+        if (!workspace->empty()) {
+            return true;
+        }
+    return false;
+}
+
+
 void shuffle(JobManager *jobManager){
-    auto n = jobManager->inputVec.size();
     int counter = 0;
-    while (counter < n){
+    while (isNotEmpty(jobManager->threadWorkspaces)){
         auto* keyVec = new IntermediateVec;
         K2* key = findMaxKey(jobManager);
         for (auto workspace : *jobManager->threadWorkspaces) {
-            while (!(workspace.empty()) && !(*key < *workspace.back().first) && !(*workspace.back().first < *key)){
-                keyVec->push_back(workspace.back());
-                workspace.pop_back();
+            while (!(workspace->empty()) && !(*key < *workspace->back().first) && !(*workspace->back().first < *key)){
+                keyVec->push_back(workspace->back());
+                workspace->pop_back();
                 counter++;
             }
         }
@@ -69,10 +76,11 @@ void shuffle(JobManager *jobManager){
     }
 }
 
+
 void *thread(void *context2)
 {
     ThreadContext* context = (ThreadContext*) context2;
-    auto workspace = context->workspace;//TODO for what?
+    auto workspace = context->workspace;
     auto client = context->jobManager->client;
     auto n = context->jobManager->inputVec.size();
     //Map
@@ -81,7 +89,7 @@ void *thread(void *context2)
     }
     int current = 0;
     while (current < n) {
-        current = ++(context->jobManager->mapCounter);
+        current = (context->jobManager->mapCounter)++;
         if (current<n) {
             auto currentPair = context->jobManager->inputVec[current];
             auto key = currentPair.first;
@@ -106,11 +114,14 @@ void *thread(void *context2)
 
     //Reduce
     current = 0;
-    while (current < n-1) {// TODO why n-1?
-        current = ++(context->jobManager->reduceCounter);
-        for(auto kvVector:*context->jobManager->shuffleList){
+    n = context->jobManager->shuffleList->size();
+    while (current < n) {
+        current = (context->jobManager->reduceCounter)++;
+        if (current<n) {
+            auto kvVector = context->jobManager->shuffleList->at(current);
             client->reduce(kvVector, context->jobManager);
         }
+
     }
 
     //Wait for all threads to finish before exit

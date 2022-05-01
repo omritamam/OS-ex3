@@ -4,4 +4,4 @@ project(ex3)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread")
 
 add_executable(ex3
-        JobManager.cpp MapReduceFramework.cpp ThreadContext.h JobManager.h demo/Barrier/Barrier.cpp)
+        JobManager.cpp MapReduceFramework.cpp ThreadContext.h JobManager.h demo/Barrier/Barrier.cpp SampleClient.cpp)
