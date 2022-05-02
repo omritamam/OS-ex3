@@ -30,17 +30,18 @@ void waitForJob(JobHandle job){
 }
 
 void getJobState(JobHandle job, JobState* state){
+
     JobManager* jobManager = (JobManager*) job;
     JobState newState;
     newState.stage = jobManager->stage;
-    switch (jobManager->stage) {
-        case stage_t::SHUFFLE_STAGE:
-            jobManager-> shuffleCounter / jobManager->currentStageElementSize;
-        case stage_t::
-    }
+    //HANDLE CONTEXT SWITCH WHILE CALCULATING
+    newState.percentage = (float)((int) jobManager-> doneCounter) / (float) jobManager->currentStageElementSize * 100;
     *state = newState;
 }
 
 void closeJobHandle(JobHandle job){
-
+    waitForJob(job);
+    JobManager* jobManager = (JobManager*) job;
+    pthread_mutex_destroy(&jobManager->mutex1);
+    jobManager->freeMemory();
 }

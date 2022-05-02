@@ -16,15 +16,18 @@ public:
     vector<IntermediateVec*>* shuffleList;
     atomic<int> mapCounter;
     atomic<int> sortCounter;
+    atomic<int> doneCounter;
     int shuffleCounter = 0;
     atomic<int> reduceCounter;
-    mutex mutex1;
+    pthread_mutex_t mutex1;
     stage_t stage;
     Barrier *barrier;
     bool joined;
     InputVec inputVec;
     const MapReduceClient *client;
     vector<ThreadContext*> *threads;
+    size_t currentStageElementSize;
+
 
     JobManager(const MapReduceClient *client, vector<InputPair> inputVec, vector<OutputPair> outputVec,
             int multiThreadLevel);
@@ -33,21 +36,30 @@ public:
         atomic_init(&mapCounter, 0);
         atomic_init(&sortCounter, 0);
         atomic_init(&reduceCounter, 0);
+        atomic_init(&doneCounter, 0);
 
         threadWorkspaces = new vector<IntermediateVec*>();
         threads = new vector<ThreadContext*>();
         barrier = new Barrier(numThreads);
         shuffleList = new vector<IntermediateVec*>;
+        pthread_mutex_init(&mutex1, nullptr);
 
     }
 
     void safePushBackOutputVec(K3 *key, V3 *value);
-
-    unsigned long currentStageElementSize;
+    void freeMemory() {
+        for(auto workspace : *threadWorkspaces){
+            free(workspace);
+        }
+        free(threadWorkspaces);
+        free(threads);
+        free(barrier);
+        free(shuffleList);
+    }
 };
 
 
 
 void *thread(void *context2);
 
-#endif //EX3_JOBMANAGER_H
+#endif
