@@ -16,7 +16,7 @@ JobManager::JobManager(const MapReduceClient *const client, const vector<InputPa
         threadWorkspaces->push_back(newWorkspace);
         ThreadContext *context =  new ThreadContext(i, this, newWorkspace);
         if(pthread_create(&context->thread, NULL, thread, context)){
-            //err
+            fprintf(stderr,"Error!");
         }
         threads->push_back(context);
     }
@@ -65,7 +65,7 @@ void shuffle(JobManager *jobManager){
     for (auto workspace : *jobManager->threadWorkspaces) {
         size+=workspace->size();
     }
-    jobManager->currentStageElementSize= size;
+    jobManager->currentStageElementSize= (int)size;
     while (isNotEmpty(jobManager->threadWorkspaces)){
         auto* keyVec = new IntermediateVec;
         K2* key = findMaxKey(jobManager);
@@ -91,11 +91,11 @@ void *thread(void *context2)
     //Map
     if(context->id == 0){
         context->jobManager->stage = stage_t::MAP_STAGE;
-        context->jobManager->currentStageElementSize = n;
+        context->jobManager->currentStageElementSize = (int) n;
     }
     size_t current = 0;
     while (current < n) {
-        current = (context->jobManager->mapCounter)++;
+        current = (size_t)((int)(context->jobManager->mapCounter)++);
         if (current<n) {
             auto currentPair = context->jobManager->inputVec[current];
             auto key = currentPair.first;
@@ -106,7 +106,7 @@ void *thread(void *context2)
     }
     //Sort
     sort(workspace->begin(), workspace->end(), sortByKey);
-    context->jobManager->barrier->barrier();
+    context->jobManager->barrier1->barrier();
     //Shuffle
     if(context->id == 0){
         context->jobManager->stage = stage_t::SHUFFLE_STAGE;
@@ -114,29 +114,33 @@ void *thread(void *context2)
         shuffle(context->jobManager);
         context->jobManager->stage = stage_t::REDUCE_STAGE;
         context->jobManager->doneCounter = 0;
-        context->jobManager->currentStageElementSize = context->jobManager->shuffleList->size();
-
-//        free(context->jobManager->barrier);
-//        context->jobManager->barrier= new Barrier(context->jobManager->threadWorkspaces->size());
+        //todo: change currentStageElementSize to the number of pair!! and update the doneCounter increment currently
+        context->jobManager->currentStageElementSize =(int) context->jobManager->shuffleList->size();
     }
     //inappropriate use of barrier - need to think of something smarter
-    context->jobManager->barrier->barrier();
+    context->jobManager->barrier2->barrier();
 
 
     //Reduce
     current = 0;
-    n = context->jobManager->currentStageElementSize;
+    n =(size_t) ((int) context->jobManager->currentStageElementSize);
     while (current < n) {
         current = (context->jobManager->reduceCounter)++;
-        if (current<n) {
-            auto kvVector = context->jobManager->shuffleList->at(current);
-            client->reduce(kvVector, context->jobManager);
-            context->jobManager->doneCounter++;
+        if (current< n) {
+            try {
+                auto kvVector = context->jobManager->shuffleList->at(current);
+                client->reduce(kvVector, context->jobManager);
+                context->jobManager->doneCounter++;
+            }
+            catch(const std::exception& e){
+                printf("fsd");
+            }
+
         }
     }
 
     //Wait for all threads to finish before exit
-    context->jobManager->barrier->barrier();
+    context->jobManager->barrier3->barrier();
 
     return NULL;
 }

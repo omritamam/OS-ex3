@@ -15,18 +15,20 @@ public:
     OutputVec outputVec;
     vector<IntermediateVec*>* shuffleList;
     atomic<int> mapCounter;
-    atomic<int> sortCounter;
     atomic<int> doneCounter;
+    atomic<int> currentStageElementSize;
     int shuffleCounter = 0;
     atomic<int> reduceCounter;
     pthread_mutex_t mutex1;
     stage_t stage;
-    Barrier *barrier;
+    Barrier *barrier1;
+    Barrier *barrier2;
+    Barrier *barrier3;
+
     bool joined;
     InputVec inputVec;
     const MapReduceClient *client;
     vector<ThreadContext*> *threads;
-    size_t currentStageElementSize;
 
 
     JobManager(const MapReduceClient *client, vector<InputPair> inputVec, vector<OutputPair> outputVec,
@@ -34,13 +36,17 @@ public:
 
     void init(int numThreads){
         atomic_init(&mapCounter, 0);
-        atomic_init(&sortCounter, 0);
         atomic_init(&reduceCounter, 0);
         atomic_init(&doneCounter, 0);
+        atomic_init(&currentStageElementSize, 0);
+
 
         threadWorkspaces = new vector<IntermediateVec*>();
         threads = new vector<ThreadContext*>();
-        barrier = new Barrier(numThreads);
+        barrier1 = new Barrier(numThreads);
+        barrier2 = new Barrier(numThreads);
+        barrier3 = new Barrier(numThreads);
+
         shuffleList = new vector<IntermediateVec*>;
         pthread_mutex_init(&mutex1, nullptr);
 
@@ -52,9 +58,23 @@ public:
             free(workspace);
         }
         free(threadWorkspaces);
-        free(threads);
-        free(barrier);
+
+        for(auto keyVec : *shuffleList){
+            for (auto kvp: *keyVec) {
+                //free first and second?
+            }
+            free(keyVec);
+        }
         free(shuffleList);
+        for(auto thread : *threads){
+            free(thread);
+        }
+        free(threads);
+
+        free(barrier1);
+        free(barrier2);
+        free(barrier3);
+        free(this);
     }
 };
 
