@@ -42,6 +42,8 @@ void getJobState(JobHandle job, JobState* state){
 void closeJobHandle(JobHandle job){
     waitForJob(job);
     auto* jobManager = (JobManager*) job;
-    pthread_mutex_destroy(&jobManager->mutex1);
+    if(pthread_mutex_destroy(&jobManager->mutex1)){
+        fprintf(stderr, "pthread_mutex_destroy bug");
+    }
     jobManager->freeMemory();
 }
