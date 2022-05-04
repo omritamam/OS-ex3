@@ -22,8 +22,8 @@ public:
     pthread_mutex_t mutex1;
     stage_t stage;
     Barrier *barrier1;
-    Barrier *barrier2;
-    Barrier *barrier3;
+//    Barrier *barrier2;
+//    Barrier *barrier3;
 
     bool joined;
     InputVec inputVec;
@@ -44,8 +44,8 @@ public:
         threadWorkspaces = new vector<IntermediateVec*>();
         threads = new vector<ThreadContext*>();
         barrier1 = new Barrier(numThreads);
-        barrier2 = new Barrier(numThreads);
-        barrier3 = new Barrier(numThreads);
+//        barrier2 = new Barrier(numThreads);
+//        barrier3 = new Barrier(numThreads);
 
         shuffleList = new vector<IntermediateVec*>;
         pthread_mutex_init(&mutex1, nullptr);
@@ -53,28 +53,27 @@ public:
     }
 
     void safePushBackOutputVec(K3 *key, V3 *value);
+
     void freeMemory() {
+
         for(auto workspace : *threadWorkspaces){
-            free(workspace);
+            delete workspace;
         }
-        free(threadWorkspaces);
+        delete threadWorkspaces;
 
         for(auto keyVec : *shuffleList){
-            for (auto kvp: *keyVec) {
-                //free first and second?
-            }
-            free(keyVec);
+         delete keyVec;
         }
-        free(shuffleList);
+        delete shuffleList;
         for(auto thread : *threads){
-            free(thread);
+            delete thread;
         }
-        free(threads);
+        delete threads;
 
-        free(barrier1);
-        free(barrier2);
-        free(barrier3);
-        free(this);
+//        delete barrier1;
+//        delete barrier2;
+//        delete barrier3;
+        delete this;
     }
 };
 

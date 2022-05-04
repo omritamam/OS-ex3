@@ -12,10 +12,10 @@ JobManager::JobManager(const MapReduceClient *const client, const vector<InputPa
     init(multiThreadLevel);
 
     for(int i = 0; i < multiThreadLevel; i++){
-        IntermediateVec* newWorkspace = new IntermediateVec;
+        auto* newWorkspace = new IntermediateVec;
         threadWorkspaces->push_back(newWorkspace);
-        ThreadContext *context =  new ThreadContext(i, this, newWorkspace);
-        if(pthread_create(&context->thread, NULL, thread, context)){
+        auto *context =  new ThreadContext(i, this, newWorkspace);
+        if(pthread_create(&context->thread, nullptr, thread, context)){
             fprintf(stderr,"Error!");
         }
         threads->push_back(context);
@@ -67,7 +67,7 @@ void shuffle(JobManager *jobManager){
     }
     jobManager->currentStageElementSize= (int)size;
     while (isNotEmpty(jobManager->threadWorkspaces)){
-        auto* keyVec = new IntermediateVec;
+        auto* keyVec = new IntermediateVec;//TODO change name
         K2* key = findMaxKey(jobManager);
         for (auto workspace : *jobManager->threadWorkspaces) {
             while (!(workspace->empty()) && !(*key < *workspace->back().first) && !(*workspace->back().first < *key)){
@@ -84,7 +84,7 @@ void shuffle(JobManager *jobManager){
 
 void *thread(void *context2)
 {
-    ThreadContext* context = (ThreadContext*) context2;
+    auto* context = (ThreadContext*) context2;
     auto workspace = context->workspace;
     auto client = context->jobManager->client;
     size_t n = context->jobManager->inputVec.size();
@@ -118,7 +118,7 @@ void *thread(void *context2)
         context->jobManager->currentStageElementSize =(int) context->jobManager->shuffleList->size();
     }
     //inappropriate use of barrier - need to think of something smarter
-    context->jobManager->barrier2->barrier();
+    context->jobManager->barrier1->barrier();
 
 
     //Reduce
@@ -140,8 +140,8 @@ void *thread(void *context2)
     }
 
     //Wait for all threads to finish before exit
-    context->jobManager->barrier3->barrier();
+//    context->jobManager->barrier1->barrier();
 
-    return NULL;
+    return nullptr;
 }
 
