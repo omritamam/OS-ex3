@@ -366,9 +366,9 @@ TEST(MattanTests, progressTest) {
     {
         std::cout<<"repetition #"<<i<<std::endl;
         CounterClient client;
-        auto s1 = new VString("abc");
-        auto s2 = new VString("cc");
-        auto s3 = new VString("ab");
+        auto s1 = new VString("This string is full of characters");
+        auto s2 = new VString("Multithreading is awesome");
+        auto s3 = new VString("conditions are race bad");
         client.inputVec.push_back({nullptr, s1});
         client.inputVec.push_back({nullptr, s2});
         client.inputVec.push_back({nullptr, s3});

@@ -92,7 +92,7 @@ void *thread(void *context2)
     //Map
     if(context->id == 0){
         context->jobManager->stage = stage_t::MAP_STAGE;
-        context->jobManager->currentStageElementSize = (int) n;
+        context->jobManager->currentStageElementSize = (int)n;
     }
     size_t current = 0;
     while (current < n) {
@@ -119,18 +119,11 @@ void *thread(void *context2)
         context->jobManager->currentStageElementSize =(int) context->jobManager->shuffleList->size();
     }
     //inappropriate use of barrier - need to think of something smarter
-    if(context->jobManager== NULL){
-        fprintf(stderr, "job = null");
-    }
     context->jobManager->barrier1->barrier();
 
 
     //Reduce
     current = 0;
-    if(context->jobManager== NULL){
-        fprintf(stdout, "job = null");
-        fflush(stdout);
-    }
     n =(size_t) ((int) context->jobManager->currentStageElementSize);
     while (current < n) {
         current = (size_t)((int)(context->jobManager->reduceCounter)++);
