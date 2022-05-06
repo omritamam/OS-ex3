@@ -20,13 +20,14 @@ void emit3 (K3* key, V3* value, void* context){
 
 void waitForJob(JobHandle job){
     auto* jobManager = (JobManager*) job;
-    if(!jobManager->joined){
+    if(jobManager->joined){
         return;
     }
     jobManager->joined = true;
     //get thread of threads;
-    pthread_join(jobManager->threads->at(0)->thread, nullptr);
-
+    for(auto thread : *jobManager->threads){
+        pthread_join(thread->thread, nullptr);
+    }
 }
 
 void getJobState(JobHandle job, JobState* state){

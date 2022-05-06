@@ -4,7 +4,8 @@ using namespace std;
 
 JobManager::JobManager(const MapReduceClient *const client, const vector<InputPair> inputVec,
                        vector<OutputPair> outputVec, int multiThreadLevel) {
-
+    fprintf(stdout, "new job manager %p \n", this);
+    fflush(stdout);
     this->client = client;
     this->inputVec = inputVec;
     this->outputVec = outputVec;
@@ -118,14 +119,21 @@ void *thread(void *context2)
         context->jobManager->currentStageElementSize =(int) context->jobManager->shuffleList->size();
     }
     //inappropriate use of barrier - need to think of something smarter
+    if(context->jobManager== NULL){
+        fprintf(stderr, "job = null");
+    }
     context->jobManager->barrier1->barrier();
 
 
     //Reduce
     current = 0;
+    if(context->jobManager== NULL){
+        fprintf(stdout, "job = null");
+        fflush(stdout);
+    }
     n =(size_t) ((int) context->jobManager->currentStageElementSize);
     while (current < n) {
-        current = (context->jobManager->reduceCounter)++;
+        current = (size_t)((int)(context->jobManager->reduceCounter)++);
         if (current< n) {
             try {
                 auto kvVector = context->jobManager->shuffleList->at(current);

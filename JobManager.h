@@ -22,10 +22,9 @@ public:
     pthread_mutex_t mutex1;
     stage_t stage;
     Barrier *barrier1;
-//    Barrier *barrier2;
-//    Barrier *barrier3;
 
-    bool joined;
+
+    bool joined = false;
     InputVec inputVec;
     const MapReduceClient *client;
     vector<ThreadContext*> *threads;
@@ -73,6 +72,9 @@ public:
 //        delete barrier1;
 //        delete barrier2;
 //        delete barrier3;
+
+        fprintf(stdout, "end job manager %p \n", this);
+        fflush(stdout);
         delete this;
     }
 };
