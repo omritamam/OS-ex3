@@ -40,12 +40,12 @@ public:
         atomic_init(&mapCounter, 0);
         atomic_init(&reduceCounter, 0);
         atomic_init(&doneCounter, 0);
-        atomic_init(&currentStageElementSize, 0);
+        atomic_init(&currentStageElementSize, (int) inputVec.size());
         atomic_init(&changingState, 0);
 //        auto init_pair = make_pair(&doneCounter, stage_t::UNDEFINED_STAGE);
 //        atomic_init(&curState,&init_pair);
 
-
+        stage = stage_t::UNDEFINED_STAGE;
         threadWorkspaces = new vector<IntermediateVec*>();
         threads = new vector<ThreadContext*>();
         barrier1 = new Barrier(numThreads);

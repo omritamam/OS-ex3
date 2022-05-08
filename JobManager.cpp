@@ -120,7 +120,10 @@ void *thread(void *context2)
         context->jobManager->stage = stage_t::REDUCE_STAGE;
         context->jobManager->doneCounter = 0;
         //todo: change currentStageElementSize to the number of pair!! and update the doneCounter increment currently
-        context->jobManager->currentStageElementSize = context->jobManager->shuffleList->size();
+        context->jobManager->currentStageElementSize = (int)context->jobManager->shuffleList->size();
+        if((int)context->jobManager->currentStageElementSize == 0){
+            context->jobManager->currentStageElementSize = (int)context->jobManager->shuffleList->size();
+        }
         pthread_mutex_unlock(&context->jobManager->changeStateMutex);
     }
     //inappropriate use of barrier - need to think of something smarter
