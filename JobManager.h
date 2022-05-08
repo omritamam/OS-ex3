@@ -20,8 +20,9 @@ public:
     atomic<int> changingState;
     int shuffleCounter = 0;
     atomic<int> reduceCounter;
-    atomic<pair<atomic<int>,stage_t>> curState;
-    pthread_mutex_t mutex1;
+//    atomic<pair<atomic<int>*,int*>> curState;
+    pthread_mutex_t outputVecMutex;
+    pthread_mutex_t changeStateMutex;
     stage_t stage;
     Barrier *barrier1;
 
@@ -41,6 +42,8 @@ public:
         atomic_init(&doneCounter, 0);
         atomic_init(&currentStageElementSize, 0);
         atomic_init(&changingState, 0);
+//        auto init_pair = make_pair(&doneCounter, stage_t::UNDEFINED_STAGE);
+//        atomic_init(&curState,&init_pair);
 
 
         threadWorkspaces = new vector<IntermediateVec*>();
@@ -50,7 +53,9 @@ public:
 //        barrier3 = new Barrier(numThreads);
 
         shuffleList = new vector<IntermediateVec*>;
-        pthread_mutex_init(&mutex1, nullptr);
+        pthread_mutex_init(&outputVecMutex, nullptr);
+        pthread_mutex_init(&changeStateMutex, nullptr);
+
         //if input vector - exit
     }
 

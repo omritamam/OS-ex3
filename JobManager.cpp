@@ -23,10 +23,10 @@ JobManager::JobManager(const MapReduceClient *const client, const vector<InputPa
 }
 
 void JobManager::safePushBackOutputVec(K3* key, V3* value){
-        pthread_mutex_lock(&mutex1);
+        pthread_mutex_lock(&outputVecMutex);
         auto pair = make_pair(key, value);
         outputVec.push_back(pair);
-        pthread_mutex_unlock(&mutex1);
+        pthread_mutex_unlock(&outputVecMutex);
     }
 
 
@@ -65,6 +65,7 @@ void shuffle(JobManager *jobManager){
         size+=workspace->size();
     }
     jobManager->currentStageElementSize= (int)size;
+    pthread_mutex_unlock(&jobManager->changeStateMutex);
     while (isNotEmpty(jobManager->threadWorkspaces)){
         auto* keyVec = new IntermediateVec;//TODO change name
         K2* key = findMaxKey(jobManager);
@@ -89,9 +90,11 @@ void *thread(void *context2)
     size_t n = context->jobManager->inputVec.size();
     //Map
     if(context->id == 0){
+        pthread_mutex_lock(&context->jobManager->changeStateMutex);
         context->jobManager->stage = stage_t::MAP_STAGE;
         context->jobManager->currentStageElementSize = (int)n;
-        context->jobManager->changingState++;
+        pthread_mutex_unlock(&context->jobManager->changeStateMutex);
+
     }
     size_t current = 0;
     while (current < n) {
@@ -109,15 +112,16 @@ void *thread(void *context2)
     context->jobManager->barrier1->barrier();
     //Shuffle
     if(context->id == 0){
-        context->jobManager->changingState++;
+        pthread_mutex_lock(&context->jobManager->changeStateMutex);
         context->jobManager->stage = stage_t::SHUFFLE_STAGE;
         context->jobManager->doneCounter = 0;
         shuffle(context->jobManager);
-        context->jobManager->changingState++;
+        pthread_mutex_lock(&context->jobManager->changeStateMutex);
         context->jobManager->stage = stage_t::REDUCE_STAGE;
         context->jobManager->doneCounter = 0;
         //todo: change currentStageElementSize to the number of pair!! and update the doneCounter increment currently
-        context->jobManager->currentStageElementSize =(int) context->jobManager->shuffleList->size();
+        context->jobManager->currentStageElementSize = context->jobManager->shuffleList->size();
+        pthread_mutex_unlock(&context->jobManager->changeStateMutex);
     }
     //inappropriate use of barrier - need to think of something smarter
     context->jobManager->barrier1->barrier();
@@ -142,7 +146,7 @@ void *thread(void *context2)
     }
 
     //Wait for all threads to finish before exit
-//    context->jobManager->barrier1->barrier();
+    context->jobManager->barrier1->barrier();
 
     return nullptr;
 }

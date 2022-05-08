@@ -33,19 +33,28 @@ void waitForJob(JobHandle job){
 void getJobState(JobHandle job, JobState* state){
 
     auto* jobManager = (JobManager*) job;
+    pthread_mutex_lock(&jobManager->changeStateMutex);
     JobState newState;
     do{
         newState.stage = jobManager->stage;
         newState.percentage = (float)((int) jobManager-> doneCounter) / (float) ((int) jobManager->currentStageElementSize) * 100;
+        if(isinf(newState.percentage)){
+            printf("eze baasaaaa \n");
+        }
     } while (newState.stage != jobManager->stage);
     *state = newState;
+    pthread_mutex_unlock(&jobManager->changeStateMutex);
+
 }
 
 void closeJobHandle(JobHandle job){
     waitForJob(job);
     auto* jobManager = (JobManager*) job;
-    if(pthread_mutex_destroy(&jobManager->mutex1)){
-        fprintf(stderr, "pthread_mutex_destroy bug");
+    if(pthread_mutex_destroy(&jobManager->outputVecMutex)){
+        fprintf(stderr, "outputVecMutex pthread_mutex_destroy bug");
+    }
+    if(pthread_mutex_destroy(&jobManager->changeStateMutex)){
+        fprintf(stderr, "changeStateMutex pthread_mutex_destroy bug");
     }
     jobManager->freeMemory();
 }
