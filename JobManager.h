@@ -17,8 +17,10 @@ public:
     atomic<int> mapCounter;
     atomic<int> doneCounter;
     atomic<int> currentStageElementSize;
+    atomic<int> changingState;
     int shuffleCounter = 0;
     atomic<int> reduceCounter;
+    atomic<pair<atomic<int>,stage_t>> curState;
     pthread_mutex_t mutex1;
     stage_t stage;
     Barrier *barrier1;
@@ -38,6 +40,7 @@ public:
         atomic_init(&reduceCounter, 0);
         atomic_init(&doneCounter, 0);
         atomic_init(&currentStageElementSize, 0);
+        atomic_init(&changingState, 0);
 
 
         threadWorkspaces = new vector<IntermediateVec*>();
@@ -48,7 +51,7 @@ public:
 
         shuffleList = new vector<IntermediateVec*>;
         pthread_mutex_init(&mutex1, nullptr);
-
+        //if input vector - exit
     }
 
     void safePushBackOutputVec(K3 *key, V3 *value);
@@ -73,8 +76,6 @@ public:
 //        delete barrier2;
 //        delete barrier3;
 
-        fprintf(stdout, "end job manager %p \n", this);
-        fflush(stdout);
         delete this;
     }
 };

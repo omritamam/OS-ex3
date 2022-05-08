@@ -4,8 +4,6 @@ using namespace std;
 
 JobManager::JobManager(const MapReduceClient *const client, const vector<InputPair> inputVec,
                        vector<OutputPair> outputVec, int multiThreadLevel) {
-    fprintf(stdout, "new job manager %p \n", this);
-    fflush(stdout);
     this->client = client;
     this->inputVec = inputVec;
     this->outputVec = outputVec;
@@ -93,6 +91,7 @@ void *thread(void *context2)
     if(context->id == 0){
         context->jobManager->stage = stage_t::MAP_STAGE;
         context->jobManager->currentStageElementSize = (int)n;
+        context->jobManager->changingState++;
     }
     size_t current = 0;
     while (current < n) {
@@ -110,9 +109,11 @@ void *thread(void *context2)
     context->jobManager->barrier1->barrier();
     //Shuffle
     if(context->id == 0){
+        context->jobManager->changingState++;
         context->jobManager->stage = stage_t::SHUFFLE_STAGE;
         context->jobManager->doneCounter = 0;
         shuffle(context->jobManager);
+        context->jobManager->changingState++;
         context->jobManager->stage = stage_t::REDUCE_STAGE;
         context->jobManager->doneCounter = 0;
         //todo: change currentStageElementSize to the number of pair!! and update the doneCounter increment currently

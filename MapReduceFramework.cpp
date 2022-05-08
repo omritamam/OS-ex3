@@ -34,9 +34,10 @@ void getJobState(JobHandle job, JobState* state){
 
     auto* jobManager = (JobManager*) job;
     JobState newState;
-    newState.stage = jobManager->stage;
-    //HANDLE CONTEXT SWITCH WHILE CALCULATING
-    newState.percentage = (float)((int) jobManager-> doneCounter) / (float) ((int) jobManager->currentStageElementSize) * 100;
+    do{
+        newState.stage = jobManager->stage;
+        newState.percentage = (float)((int) jobManager-> doneCounter) / (float) ((int) jobManager->currentStageElementSize) * 100;
+    } while (newState.stage != jobManager->stage);
     *state = newState;
 }
 
