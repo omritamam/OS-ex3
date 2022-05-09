@@ -119,11 +119,7 @@ void *thread(void *context2)
         pthread_mutex_lock(&context->jobManager->changeStateMutex);
         context->jobManager->stage = stage_t::REDUCE_STAGE;
         context->jobManager->doneCounter = 0;
-        //todo: change currentStageElementSize to the number of pair!! and update the doneCounter increment currently
-        context->jobManager->currentStageElementSize = (int)context->jobManager->shuffleList->size();
-        if((int)context->jobManager->currentStageElementSize == 0){
-            context->jobManager->currentStageElementSize = (int)context->jobManager->shuffleList->size();
-        }
+        context->jobManager->currentStageElementSize = (int)context->jobManager->shuffleCounter;
         pthread_mutex_unlock(&context->jobManager->changeStateMutex);
     }
     context->jobManager->barrier1->barrier();
@@ -138,7 +134,8 @@ void *thread(void *context2)
             try {
                 auto kvVector = context->jobManager->shuffleList->at(current);
                 client->reduce(kvVector, context->jobManager);
-                context->jobManager->doneCounter++;
+                auto vecSize =  kvVector->size();
+                context->jobManager->doneCounter+= (int)vecSize;
             }
             catch(const std::exception& e){
                 printf("fsd");
