@@ -3,10 +3,10 @@
 using namespace std;
 
 JobManager::JobManager(const MapReduceClient *const client, const vector<InputPair> inputVec,
-                       vector<OutputPair> outputVec, int multiThreadLevel) {
+                       vector<OutputPair> &outputVec, int multiThreadLevel) {
     this->client = client;
     this->inputVec = inputVec;
-    this->outputVec = outputVec;
+    this->outputVec = &outputVec;
 
     init(multiThreadLevel);
 
@@ -25,7 +25,7 @@ JobManager::JobManager(const MapReduceClient *const client, const vector<InputPa
 void JobManager::safePushBackOutputVec(K3* key, V3* value){
         pthread_mutex_lock(&outputVecMutex);
         auto pair = make_pair(key, value);
-        outputVec.push_back(pair);
+        outputVec->push_back(pair);
         pthread_mutex_unlock(&outputVecMutex);
     }
 
@@ -67,17 +67,17 @@ void shuffle(JobManager *jobManager){
     jobManager->currentStageElementSize= (int)size;
     pthread_mutex_unlock(&jobManager->changeStateMutex);
     while (isNotEmpty(jobManager->threadWorkspaces)){
-        auto* keyVec = new IntermediateVec;//TODO change name
+        auto* newVec = new IntermediateVec;
         K2* key = findMaxKey(jobManager);
         for (auto workspace : *jobManager->threadWorkspaces) {
             while (!(workspace->empty()) && !(*key < *workspace->back().first) && !(*workspace->back().first < *key)){
-                keyVec->push_back(workspace->back());
+                newVec->push_back(workspace->back());
                 workspace->pop_back();
                 jobManager->shuffleCounter++;
                 jobManager->doneCounter++;
             }
         }
-        jobManager->shuffleList->push_back(keyVec);
+        jobManager->shuffleList->push_back(newVec);
     }
 }
 
@@ -126,7 +126,6 @@ void *thread(void *context2)
         }
         pthread_mutex_unlock(&context->jobManager->changeStateMutex);
     }
-    //inappropriate use of barrier - need to think of something smarter
     context->jobManager->barrier1->barrier();
 
 
