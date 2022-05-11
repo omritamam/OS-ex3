@@ -23,6 +23,5 @@ public:
         this->workspace = workspace;
     }
 
-
 };
 #endif

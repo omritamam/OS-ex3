@@ -5,7 +5,7 @@
 #include <mutex>
 #include <atomic>
 #include "MapReduceClient.h"
-#include "ThreadContext.h"
+//#include "ThreadContext.h"
 #include "demo/Barrier/Barrier.h"
 
 class JobManager{
