@@ -2,12 +2,11 @@
 #include <pthread.h>
 #include "MapReduceClient.h"
 #include <atomic>
-#include <armadillo>
 #include <vector>
 #include <mutex>
 #include <atomic>
-#include "MapReduceClient.h"
-#include "demo/Barrier/Barrier.h"
+#include "Barrier.h"
+#include <algorithm>
 
 #define EX3_THREADCONTEXT_H
 #define EX3_JOBMANAGER_H
@@ -111,8 +110,6 @@ void *thread (void *context2);
 
 //----------------------- JobManager class ------------------------------//
 
-#include <algorithm>
-#include "JobManager.h"
 
 using namespace std;
 
@@ -294,9 +291,7 @@ void *thread (void *context2)
               context->jobManager->doneCounter += (int) vecSize;
             }
           catch (const std::exception &e)
-            {
-//              printf ("failed");
-            }
+            {}
         }
     }
 
