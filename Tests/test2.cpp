@@ -9694,6 +9694,8 @@ std::map<int, int> expectedOutput = {
 
 int main ()
 {
+    std::cout << "Start THE TEST!" << std::endl;
+
   InputVec numbers;
   MRNumber m;
   srand (0);

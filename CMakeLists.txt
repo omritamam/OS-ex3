@@ -29,10 +29,16 @@ project(ex3 VERSION 1.0 LANGUAGES C CXX)
 set(THREADS_PREFER_PTHREAD_FLAG ON)
 find_package(Threads REQUIRED)
 
-add_library(MapReduceFramework
-        MapReduceClient.h
-        MapReduceFramework.cpp MapReduceFramework.h
-        ThreadContext.h JobManager.cpp demo/Barrier/Barrier.cpp        )
+
+add_executable(MapReduceFramework
+#        MapReduceClient.h
+        MapReduceFramework.cpp
+        MapReduceFramework.h
+#        ThreadContext.h
+
+#        JobManager.cpp
+        demo/Barrier/Barrier.cpp
+        Tests/test4.cpp)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread")
 
@@ -43,4 +49,4 @@ target_include_directories(MapReduceFramework PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}
 target_link_libraries(MapReduceFramework PUBLIC Threads::Threads)
 
 # Add tests
-add_subdirectory(mattanTests)
+#add_subdirectory(mattanTests)

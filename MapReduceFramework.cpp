@@ -295,7 +295,7 @@ void *thread (void *context2)
             }
           catch (const std::exception &e)
             {
-              printf ("failed");
+//              printf ("failed");
             }
         }
     }
