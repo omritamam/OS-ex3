@@ -1,0 +1,12 @@
+shirayarhi, omri.tamam
+Shira Yarhi (318344637), Omri Tamam (315564112)
+EX: 3
+
+FILES:
+MapReduceFramework.cpp - lib implementation of the framework
+README - this file
+Makefile - regular make file - output is "libMapReduceFramework.a"
+Barrier.cpp - a given class of a barrier
+Barrier.h - header file of the class barrier
+
+ANSWERS:
